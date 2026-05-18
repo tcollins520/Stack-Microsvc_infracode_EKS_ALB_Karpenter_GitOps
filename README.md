@@ -5,10 +5,11 @@ Production-style Infrastructure as Code (IaC) projects built with Terraform on A
 This repository contains Terraform projects focused on:
 - AWS infrastructure provisioning
 - Remote backend configuration
-- S3 state management
-- VPC architecture
-- Terraform best practices
+- VPC networking
+- Amazon EKS infrastructure
+- Terraform state management
 - Infrastructure automation
+- DevOps and Cloud Engineering best practices
 
 ---
 
@@ -16,9 +17,11 @@ This repository contains Terraform projects focused on:
 
 - Terraform
 - AWS
+- Amazon EKS
+- Amazon VPC
 - Amazon S3
 - DynamoDB
-- VPC
+- IAM
 - GitHub
 - Infrastructure as Code (IaC)
 
@@ -31,20 +34,12 @@ Terraform_S3_VPC/
 │
 ├── 06_05_remote_backend_s3bucket/
 │   ├── terraform-manifests/
-│   │   ├── c1-versions.tf
-│   │   ├── c2-variables.tf
-│   │   ├── c3-s3bucket.tf
-│   │   ├── c4-outputs.tf
-│   │   └── .terraform.lock.hcl
 │
 ├── 06_06_vpc_with_remote_backend/
 │   ├── terraform-manifests/
-│   │   ├── c1-versions.tf
-│   │   ├── c2-variables.tf
-│   │   ├── c3-datasources-and-locals.tf
-│   │   ├── c4-vpc.tf
-│   │   ├── c5-outputs.tf
-│   │   └── .terraform.lock.hcl
+│
+├── EKS/
+│   ├── terraform-manifests/
 │
 └── README.md
 ```
@@ -57,13 +52,13 @@ Terraform_S3_VPC/
 
 This project provisions:
 - S3 bucket for Terraform remote state
-- Backend infrastructure for state management
-- Versioning and state storage configuration
+- Backend infrastructure for Terraform state management
+- State versioning and locking support
 
 ### Features
 - Remote Terraform state management
-- Infrastructure state centralization
-- Production-style Terraform backend setup
+- Centralized infrastructure state
+- Production-style backend architecture
 
 ---
 
@@ -72,14 +67,37 @@ This project provisions:
 This project provisions:
 - AWS VPC
 - Public and private subnets
-- Networking components
-- Remote backend state integration
+- Internet Gateway
+- Route Tables
+- Networking infrastructure
+- Remote backend integration
 
 ### Features
-- Modular Terraform structure
-- Remote backend configuration
-- AWS networking infrastructure
-- Reusable Infrastructure as Code design
+- Reusable Terraform architecture
+- AWS networking design
+- Infrastructure modularization
+- Remote state integration
+
+---
+
+## EKS Infrastructure (Upcoming)
+
+This project will provision:
+- Amazon EKS Cluster
+- Managed Node Groups
+- IAM Roles for Service Accounts (IRSA)
+- AWS Load Balancer Controller
+- EBS CSI Driver
+- Kubernetes Networking
+- Autoscaling Infrastructure
+
+### Planned Features
+- Production-grade EKS architecture
+- GitOps-ready infrastructure
+- Kubernetes cluster automation
+- Secure IAM integration
+- High availability design
+- Scalable container platform
 
 ---
 
@@ -91,7 +109,7 @@ This project provisions:
 terraform init
 ```
 
-## Validate Configuration
+## Validate Terraform Configuration
 
 ```bash
 terraform validate
@@ -129,23 +147,25 @@ This repository demonstrates:
 - Remote Terraform backend configuration
 - S3 backend storage
 - Terraform state management best practices
+- Infrastructure state centralization
 
 ---
 
 # Best Practices Implemented
 
-- Remote backend state storage
-- Terraform provider version locking
+- Remote Terraform backend
+- Provider version locking
 - Infrastructure modularization
 - Git version control
-- `.gitignore` for Terraform cache/state files
+- Terraform state isolation
+- Clean repository structure
 - Infrastructure as Code principles
 
 ---
 
 # Files Ignored From Git
 
-The following files/folders are excluded:
+The following files/folders are excluded from version control:
 
 ```gitignore
 .terraform/
@@ -186,15 +206,22 @@ terraform version
 
 # Future Enhancements
 
-Planned infrastructure projects:
-- EKS Cluster
-- Application Load Balancer
-- Route53
-- Auto Scaling
-- RDS
-- Terraform Modules
-- GitHub Actions CI/CD
+Planned infrastructure and DevOps projects:
+- Amazon EKS
+- Helm
 - ArgoCD GitOps
+- GitHub Actions CI/CD
+- AWS Load Balancer Controller
+- Route53
+- ACM TLS/HTTPS
+- Autoscaling
+- Prometheus/Grafana Monitoring
+- OpenTelemetry
+- Kubernetes Ingress
+- AWS RDS
+- ElastiCache
+- DynamoDB
+- Terraform Modules
 
 ---
 
@@ -203,10 +230,13 @@ Planned infrastructure projects:
 This repository was created to strengthen skills in:
 - Terraform
 - AWS Cloud Infrastructure
+- Amazon EKS
 - Infrastructure as Code
-- Remote Backend Configuration
-- Networking
+- Kubernetes Infrastructure
 - DevOps Engineering
+- GitOps
+- Cloud Networking
+- State Management
 
 ---
 
