@@ -23,3 +23,5 @@ variable "subnet_newbits" {
   type        = number
   default     = 8
 }
+
+#
