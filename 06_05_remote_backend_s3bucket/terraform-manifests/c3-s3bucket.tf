@@ -12,7 +12,7 @@ resource "aws_s3_bucket" "tfstate_bucket" {
   tags = {
     Name        = "tfstate-${var.environment_name}-${var.aws_region}"
     Environment = var.environment_name
-    Project     = "remote-backend-for--microsvc-dev"
+    Project     = "remote-backend-for--retail-store-dev"
     Purpose     = "terraform-backend"
   }
 }
