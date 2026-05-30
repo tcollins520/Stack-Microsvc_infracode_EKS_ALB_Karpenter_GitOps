@@ -1,0 +1,51 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: spot-nodepool
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default-ec2nodeclass
+      taints: []
+      startupTaints: []
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        # Spot capacity (50-90% cheaper than on-demand)
+        # Note: Spot instances can be interrupted with 2-minute notice
+        # Best for fault-tolerant, stateless workloads        
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        # Multiple instance families for better spot availability
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values: ["t3", "t3a", "t2", "c5a", "c6a"]
+        # Allow micro to large - flexibility helps find available spot capacity
+        - key: karpenter.k8s.aws/instance-size
+          operator: In
+          values: ["micro", "small", "medium", "large"]
+        # Must match the AZs where your EKS cluster has subnets configured
+        # Karpenter can only launch nodes in AZs with configured VPC subnets
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b", "us-east-1c"]
+  limits:
+    cpu: "50"
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 30s
+    # Add budgets to control disruption rate
+    budgets:
+      - nodes: "100%"  # Allow all nodes to be disrupted if needed
+        reasons:
+          - "Drifted"
+          - "Underutilized"
+          - "Empty"    
