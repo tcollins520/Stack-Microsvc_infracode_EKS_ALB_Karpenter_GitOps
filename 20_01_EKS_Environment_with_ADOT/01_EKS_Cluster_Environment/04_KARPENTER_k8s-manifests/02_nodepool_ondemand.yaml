@@ -1,0 +1,48 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: ondemand-nodepool
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default-ec2nodeclass
+      # No taints for now (you can add later)
+      taints: []
+      startupTaints: []
+      # Node selection logic
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]    
+        # Default = on-demand: If not specified, capacity type defaults to on-demand
+        # Explicitly specify on-demand (best practice)
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]          
+        # Cheaper, smaller instance families
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values: ["t3", "t3a"]  # All burstable, budget-friendly
+        # Limit to smaller sizes only
+        - key: karpenter.k8s.aws/instance-size
+          operator: In
+          #values: ["micro", "small", "medium", "large"]  # Caps at t3.medium (2 vCPU, 4GB RAM)
+          values: ["medium", "large"]  # Caps at t3.medium (2 vCPU, 4GB RAM)
+        # Must match the AZs where your EKS cluster has subnets configured
+        # Karpenter can only launch nodes in AZs with configured VPC subnets
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b", "us-east-1c"]  
+  # Cluster-wide max scaling limit
+  limits:
+    cpu: "50"
+  # Recommended disruption settings
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 30s  # How long to wait before consolidating

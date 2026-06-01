@@ -1,0 +1,60 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default-ec2nodeclass
+spec:
+  # Recommended for EKS-managed Amazon Linux 2023 AMIs
+  amiFamily: AL2023
+  amiSelectorTerms:
+    - alias: al2023@latest
+  # Node IAM role created in Terraform
+  role: "arn:aws:iam::180789647333:role/retail-dev-karpenter-node-role"
+  # Auto-discover subnets (your cluster tags)
+  subnetSelectorTerms:
+    - tags:
+        kubernetes.io/cluster/retail-dev-eksdemo1: owned
+        kubernetes.io/role/internal-elb: "1"
+  # Auto-discover security groups
+  securityGroupSelectorTerms:
+    - tags:
+        kubernetes.io/cluster/retail-dev-eksdemo1: owned
+  # Required for Karpenter auto-discovery of resources
+  tags:
+    karpenter.sh/discovery: retail-dev-eksdemo1
+  # Recommended EBS configuration
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 20Gi
+        volumeType: gp3
+        encrypted: true
+        deleteOnTermination: true
+  # Recommended IMDS Metadata options
+  metadataOptions:
+    httpTokens: required
+    httpPutResponseHopLimit: 2
+
+
+  # -------------------------------------------------------------------
+  # NOTE ABOUT SUBNET SELECTION:
+  #
+  # By default, Karpenter discovers *all* subnets that contain the
+  # cluster tag:
+  #
+  #   kubernetes.io/cluster/<cluster-name> = owned
+  #
+  # Since this tag exists on BOTH public and private subnets, Karpenter
+  # may accidentally provision worker nodes in PUBLIC subnets, which
+  # gives EC2 instances public IP addresses (NOT secure).
+  #
+  # To enforce a private-only Kubernetes data plane, we add an extra
+  # filter:
+  #
+  #   kubernetes.io/role/internal-elb = "1"
+  #
+  # This tag exists ONLY on private subnets (created for internal load
+  # balancers), so Karpenter will launch nodes **exclusively in private
+  # subnets**, with NO public IPs — matching enterprise security
+  # standards.
+  # Use this filter ALWAYS in production clusters for node provisioning.
+  # -------------------------------------------------------------------
