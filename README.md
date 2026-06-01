@@ -4,69 +4,30 @@ Production-style Infrastructure as Code (IaC) projects built with Terraform on A
 
 This repository contains Terraform projects focused on:
 
-AWS infrastructure provisioning
-Remote backend configuration
-Amazon VPC networking
-Amazon EKS infrastructure
-Kubernetes platform foundations
-AWS Load Balancer Controller
-Kubernetes ingress (HTTP/HTTPS)
-Terraform state management
-Infrastructure automation
-DevOps and Cloud Engineering best practices
-Technologies Used
-Terraform
-AWS
-Amazon EKS
-Kubernetes
-Amazon VPC
-Amazon S3
-DynamoDB
-IAM
-AWS Load Balancer Controller
-Helm
-GitHub
-Infrastructure as Code (IaC)
-Repository Structure
-Terraform_S3_VPC/
-│
-├── 06_05_remote_backend_s3bucket/
-│   ├── terraform-manifests/
-│
-├── 06_06_vpc_with_remote_backend/
-│   ├── terraform-manifests/
-│
-├── 07_Terraform_EKS_Cluster/
-│   ├── 01_vpc_module/
-│   ├── 02_EKS_terraform-manifests/
-│
-├── 08_Kubernetes_Foundation/
-│
-├── 09_Kubernetes_Secrets/
-│
-├── 10_Kubernetes_Storage/
-│
-├── 11_Kubernetes_Ingress/
-│   ├── 11_01_LoadBalancer_Controller_Install/
-│   ├── 11_02_Kubernetes_Ingress_http/
-│   ├── 11_03_Kubernetes_Ingress_https/
-│
-└── README.md
-Project Overview
-06_05_remote_backend_s3bucket
-
-This project provisions:
-
-S3 bucket for Terraform remote state
-Backend infrastructure for Terraform state management
-Terraform state locking support
-Features
-Remote Terraform state management
-Centralized infrastructure state
-Production-style backend architecture
-Infrastructure state protection
-06_06_vpc_with_remote_backend
-
+* AWS infrastructure provisioning
+* Remote backend configuration
+* Amazon VPC networking
+* Amazon EKS infrastructure
+* Kubernetes platform foundations
+* AWS Load Balancer Controller
+* Kubernetes ingress (HTTP/HTTPS)
+* Terraform state management
+* Infrastructure automation
+* DevOps and Cloud Engineering best practices
+* Technologies Used
+* Terraform
+* AWS
+* Amazon EKS
+* Kubernetes
+* Amazon VPC
+* Amazon S3
+* DynamoDB
+* IAM
+* AWS Load Balancer Controller
+* Helm
+* GitHub
+* Infrastructure as Code (IaC)
+* 
 This project provisions:
 
 AWS VPC
