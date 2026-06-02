@@ -12,15 +12,15 @@ spec:
   # Auto-discover subnets (your cluster tags)
   subnetSelectorTerms:
     - tags:
-        kubernetes.io/cluster/retail-dev-eksdemo1: owned
+        kubernetes.io/cluster/retail-dev-platform-eks: owned
         kubernetes.io/role/internal-elb: "1"
   # Auto-discover security groups
   securityGroupSelectorTerms:
     - tags:
-        kubernetes.io/cluster/retail-dev-eksdemo1: owned
+        kubernetes.io/cluster/retail-dev-platform-eks: owned
   # Required for Karpenter auto-discovery of resources
   tags:
-    karpenter.sh/discovery: retail-dev-eksdemo1
+    karpenter.sh/discovery: retail-dev-platform-eks
   # Recommended EBS configuration
   blockDeviceMappings:
     - deviceName: /dev/xvda
