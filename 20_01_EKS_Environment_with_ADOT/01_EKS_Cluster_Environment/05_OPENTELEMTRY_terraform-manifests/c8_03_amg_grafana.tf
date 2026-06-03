@@ -1,6 +1,6 @@
 # AMAZON MANAGED GRAFANA WORKSPACE
 resource "aws_grafana_workspace" "main" {
-  name                     = "${local.cluster_name}-amg"
+  name                     = "${local.cluster_name}-amg-2"
   description              = "Grafana workspace for ${local.cluster_name} EKS cluster monitoring"
   account_access_type      = "CURRENT_ACCOUNT"
   authentication_providers = ["AWS_SSO"]  # AWS Identity Center

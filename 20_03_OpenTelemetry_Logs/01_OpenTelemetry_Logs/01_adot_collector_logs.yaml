@@ -1,0 +1,87 @@
+# ADOT Logs Collector - DaemonSet (One Pod Per Node)
+# Sends container logs from EKS to CloudWatch Logs
+
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: adot-logs
+  namespace: default
+spec:
+  mode: daemonset
+  serviceAccount: adot-collector
+
+  # Inject node name as environment variable
+  env:
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName  
+  
+  # Fix: Allow reading host filesystem /var/log/pods
+  podSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+  
+   # MISSING: Add tolerations to run on all nodes
+  tolerations:
+    - operator: Exists
+      effect: NoSchedule
+    - operator: Exists
+      effect: NoExecute
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  volumes:
+    - name: varlogpods
+      hostPath:
+        path: /var/log/pods
+  
+  volumeMounts:
+    - name: varlogpods
+      mountPath: /var/log/pods
+      readOnly: true
+  
+  config:
+    receivers:
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        exclude:
+          - /var/log/pods/default_adot-*/*/*.log
+          - /var/log/pods/kube-system_*/*/*.log
+        start_at: end
+    
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 400
+      
+      k8sattributes:
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.container.name
+      
+      batch:
+        timeout: 10s
+    
+    exporters:
+      awscloudwatchlogs:
+        region: us-east-1
+        log_group_name: "/aws/eks/retail-dev-platform-eks/application"
+        log_stream_name: "retail-dev-platform-eks1-v4"    # Single Stream
+        # log_stream_name: "${K8S_NODE_NAME}"         # Per k8s Node 
+    
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [memory_limiter, k8sattributes, batch]
+          exporters: [awscloudwatchlogs]
