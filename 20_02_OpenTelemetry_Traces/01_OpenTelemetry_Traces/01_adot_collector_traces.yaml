@@ -1,0 +1,139 @@
+# OpenTelemetry Collector for Retail Store Sample Application
+# Supports all 5 microservices: UI, Cart, Orders, Catalog, Checkout
+# Handles OTLP traces with AWS X-Ray integration
+# Filters out health check and monitoring probe traces
+#
+# Prerequisites:
+# 1. ADOT Operator installed: https://aws-otel.github.io/docs/getting-started/adot-eks-add-on
+# 2. ServiceAccount with X-Ray permissions
+
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: adot-traces
+  namespace: default
+spec:
+  mode: deployment
+  replicas: 1
+  serviceAccount: adot-collector
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 750Mi
+    requests:
+      cpu: 300m
+      memory: 512Mi
+  
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    
+    processors:
+      # Memory limiter to prevent OOM
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 512
+        spike_limit_mib: 128
+
+      # Filter out health check traces
+      # Handles both Java (Spring Boot) and Node.js instrumentation
+      filter/healthcheck:
+        error_mode: ignore
+        traces:
+          span:
+           
+            # Spring Boot Actuator health endpoints (pattern match)
+            - 'attributes["http.route"] == "/actuator/health/{*path}"'
+            
+            # AWS Load Balancer health checks on Java services
+            - 'attributes["user_agent.original"] == "ELB-HealthChecker/2.0"'
+            
+            # Kubernetes probes on Java services
+            - 'IsMatch(attributes["user_agent.original"], "^kube-probe/.*")'
+            
+            # /health endpoint (exact path)
+            - 'attributes["http.target"] == "/health"'
+            
+            #  /health endpoint (url.path)
+            - 'attributes["url.path"] == "/health"'
+            
+            # Kubernetes probes 
+            - 'IsMatch(attributes["http.user_agent"], "^kube-probe/.*")'
+            
+            # AWS Load Balancer health checks 
+            - 'attributes["http.user_agent"] == "ELB-HealthChecker/2.0"'
+      
+            # NestJS internal health check spans (these don't have user_agent!)
+            - 'attributes["nestjs.callback"] == "health"'      
+
+            # Express middleware for health endpoint
+            - 'attributes["express.name"] == "/health" and attributes["express.type"] == "request_handler"'
+
+            # Express middleware spans that are part of health check traces
+            - 'attributes["http.route"] == "/health" and attributes["express.type"] == "middleware"'
+
+      # Kubernetes attributes - CRITICAL for trace correlation 
+      k8sattributes:
+        auth_type: serviceAccount
+        passthrough: false
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.deployment.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.node.name
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+      
+      # Batch processor 
+      batch:
+        timeout: 10s
+        send_batch_size: 50
+    
+    exporters:
+      awsxray:
+        region: us-east-1
+        indexed_attributes:
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.deployment.name
+          - http.method
+          - http.status_code
+      
+      # Debug exporter for teaching (remove in production)
+      debug:
+        verbosity: detailed
+    
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+    
+    service:
+      extensions: 
+        - health_check
+      pipelines:
+        traces:
+          receivers: 
+            - otlp
+          processors: 
+            - memory_limiter          # 1. Prevent OOM
+            - filter/healthcheck      # 2. Drop health checks EARLY
+            - k8sattributes           # 3. Add Kubernetes context
+            - batch                   # 4. Efficient batching
+          exporters: 
+            - awsxray
+            - debug                   # Remove this in production demos
